@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package groove_sync;
+
+service SyncService {
+
+    rpc DescribeDataset(DescribeDatasetRequest) returns (DescribeDatasetResult);
+
+    rpc StreamDatasetChanges(StreamDatasetChangesRequest) returns (stream DatasetChange);
+
+    rpc GetShards(GetShardsRequest) returns (GetShardsResult);
+
+    rpc GetData(GetDataRequest) returns (stream DataFrame);
+}
+
+message DescribeDatasetRequest {
+    string dataset_uri = 1;
+}
+
+message DescribeDatasetResult {
+    bytes schema_bytes = 1;
+}
+
+message StreamDatasetChangesRequest {
+    string dataset_uri = 1;
+    repeated string model_filter = 2;
+}
+
+message CategoryInterval {
+    repeated string start = 1;
+    repeated string end = 2;
+}
+
+message DoubleInterval {
+    double start = 1;
+    double end = 2;
+}
+
+message Int64Interval {
+    int64 start = 1;
+    int64 end = 2;
+}
+
+message DataShard {
+    string location = 1;
+    bytes shard_bytes = 2;
+}
+
+message DatasetChange {
+    enum DatasetChangeType {
+        Arrived = 0;
+        Expired = 1;
+        Removed = 2;
+    }
+    DatasetChangeType type = 1;
+    string dataset_uri = 2;
+    string model_id = 3;
+    oneof interval {
+        CategoryInterval cat = 4;
+        DoubleInterval dbl = 5;
+        Int64Interval i64 = 6;
+    }
+    repeated DataShard shards = 7;
+}
+
+message GetShardsRequest {
+    string dataset_uri = 1;
+    string model_id = 2;
+    oneof interval {
+        CategoryInterval cat = 3;
+        DoubleInterval dbl = 4;
+        Int64Interval i64 = 5;
+    }
+}
+
+message GetShardsResult {
+    repeated DataShard shards = 1;
+}
+
+message GetDataRequest {
+    bytes shard_bytes = 1;
+}
+
+message ValueField {
+    uint32 val_index = 1;
+    uint32 fid_index = 2;
+}
+message DataFrame {
+    oneof frame {
+        bytes cat = 1;
+        bytes dbl = 2;
+        bytes i64 = 3;
+    }
+    uint32 key_index = 4;
+    repeated ValueField value_fields = 5;
+}

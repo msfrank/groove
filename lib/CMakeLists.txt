@@ -1,0 +1,11 @@
+
+add_subdirectory(groove_data)
+add_subdirectory(groove_io)
+add_subdirectory(groove_iterator)
+add_subdirectory(groove_math)
+add_subdirectory(groove_model)
+add_subdirectory(groove_mount)
+add_subdirectory(groove_shapes)
+add_subdirectory(groove_storage)
+add_subdirectory(groove_sync)
+add_subdirectory(groove_units)

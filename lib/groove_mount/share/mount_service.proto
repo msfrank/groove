@@ -1,0 +1,159 @@
+syntax = "proto3";
+
+package groove_mount;
+
+service MountService {
+
+    rpc IdentifyAgent(IdentifyAgentRequest) returns (IdentifyAgentResult);
+
+    rpc MountCollection(MountCollectionRequest) returns (stream CollectionChange);
+
+    rpc CreateContainer(CreateContainerRequest) returns (CreateContainerResult);
+
+    rpc CreateDataset(CreateDatasetRequest) returns (CreateDatasetResult);
+
+    rpc PutData(PutDataRequest) returns (PutDataResult);
+
+    rpc RemoveData(RemoveDataRequest) returns (RemoveDataResult);
+
+    rpc DeleteDataset(DeleteDatasetRequest) returns (DeleteDatasetResult);
+
+    rpc DeleteContainer(DeleteContainerRequest) returns (DeleteContainerResult);
+}
+
+message IdentifyAgentRequest {
+}
+
+message IdentifyAgentResult {
+    string agent_name = 1;
+    uint64 uptime_millis = 2;
+}
+
+enum Action {
+    Invalid = 0;
+    Read = 1;
+    Write = 2;
+    List = 3;
+    Create = 4;
+    Delete = 5;
+}
+
+message Permission {
+    string subject_uri = 1;
+    Action action = 2;
+}
+
+message Policy {
+    repeated Permission permissions = 1;
+}
+
+message MountCollectionRequest {
+    enum MountMode {
+        Open = 0;
+        OpenOrCreate = 1;
+        CreateOnly = 2;
+        Ephemeral = 3;
+    }
+    string name = 1;
+    MountMode mode = 2;
+    string config_hash = 3;
+    Policy policy = 4;
+}
+
+message CollectionChange {
+    enum CollectionChangeType {
+        Created = 0;
+        Opened = 1;
+        AddedContainer = 2;
+        AddedDataset = 3;
+        RemovedContainer = 4;
+        RemovedDataset = 5;
+    }
+    CollectionChangeType type = 1;
+    string uri = 2;
+}
+
+message CreateContainerRequest {
+    string container_uri = 1;
+    string name = 2;
+    Policy policy = 3;
+}
+
+message CreateContainerResult {
+    string container_uri = 1;
+}
+
+message CreateDatasetRequest {
+    string container_uri = 1;
+    string name = 2;
+    bytes schema_bytes = 3;
+    Policy policy = 4;
+}
+
+message CreateDatasetResult {
+    string dataset_uri = 1;
+}
+
+message ValueField {
+    uint32 val_index = 1;
+    uint32 fid_index = 2;
+}
+
+message PutDataRequest {
+    string dataset_uri = 1;
+    string model_id = 2;
+    oneof frame {
+        bytes cat = 3;
+        bytes dbl = 4;
+        bytes i64 = 5;
+    }
+    uint32 key_index = 6;
+    repeated ValueField value_fields = 7;
+}
+
+message PutDataResult {
+    repeated string failed_vectors = 1;
+}
+
+message CategoryInterval {
+    repeated string start = 1;
+    repeated string end = 2;
+}
+
+message DoubleInterval {
+    double start = 1;
+    double end = 2;
+}
+
+message Int64Interval {
+    int64 start = 1;
+    int64 end = 2;
+}
+
+message RemoveDataRequest {
+    string dataset_uri = 1;
+    string model_id = 2;
+    oneof interval {
+        CategoryInterval cat = 3;
+        DoubleInterval dbl = 4;
+        Int64Interval i64 = 5;
+    }
+}
+
+message RemoveDataResult {
+}
+
+message DeleteDatasetRequest {
+    string dataset_uri = 1;
+}
+
+message DeleteDatasetResult {
+}
+
+message DeleteContainerRequest {
+    string container_uri = 1;
+    bool delete_recursive = 2;
+}
+
+message DeleteContainerResult {
+}

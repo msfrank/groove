@@ -1,0 +1,39 @@
+namespace gss1;
+
+file_identifier "GSS1";                         // 4 byte magic for Groove Sync Shard version 1
+
+enum ShardVersion : uint8 {
+    Unknown,
+    Version1,
+}
+
+table CategoryInterval {
+    start: [string];
+    end: [string];
+}
+
+table DoubleInterval {
+    start: double;
+    end: double;
+}
+
+table Int64Interval {
+    start: int64;
+    end: int64;
+}
+
+union Interval {
+    CategoryInterval,
+    DoubleInterval,
+    Int64Interval,
+}
+
+table Shard {
+    abi: ShardVersion;                          // target ABI the shard was generated for
+    timestamp: uint32;
+    dataset_uri: string;
+    model_id: string;
+    interval: Interval;
+}
+
+root_type Shard;

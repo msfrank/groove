@@ -1,0 +1,101 @@
+namespace gms1;
+
+file_identifier "GMS1";                         // 4 byte magic for Groove Model Schema version 1
+
+enum SchemaVersion : uint8 {
+    Unknown,
+    Version1,
+}
+
+enum TrueFalseNil : uint8 { Nil = 0, False, True }
+
+table TrueFalseNilValue { tfn: TrueFalseNil; }
+table Int64Value        { i64: int64; }
+table Float64Value      { f64: float64; }
+table UInt64Value       { u64: uint64; }
+table UInt32Value       { u32: uint32; }
+table UInt16Value       { u16: uint16; }
+table UInt8Value        { u8: uint8; }
+table StringValue       { utf8: string; }
+
+union Value {
+    TrueFalseNilValue,
+    Int64Value,
+    Float64Value,
+    UInt64Value,
+    UInt32Value,
+    UInt16Value,
+    UInt8Value,
+    StringValue,
+}
+
+table NamespaceDescriptor {
+    ns_url: string;                             // globally-unique url of the namespace
+}
+
+table AttrDescriptor {
+    ns: uint32;                                 // namespace of the attribute
+    id: uint32;                                 // id of the attribute
+    value: Value;                               // value of the attribute
+}
+
+enum ValueType : uint8 {
+    Double,
+    Int64,
+    String,
+}
+
+enum ValueFidelity : uint8 {
+    OnlyValidValue,                             // row must have a valid value
+    OnlyValidOrEmpty,                           // row value must be valid or empty
+    AnyFidelityAllowed,                         // row value can have any fidelity state
+}
+
+table ColumnDescriptor {
+    id: string;                                 // the column id
+    attrs: [uint32];                            // array of offsets to attributes in the attrs section
+    value_type: ValueType;                      // the value type
+    fidelity: ValueFidelity;                    // the fidelity mode
+}
+
+enum KeyType : uint8 {
+    Category,
+    Double,
+    Int64,
+}
+
+enum KeyCollation : uint8 {
+    Sorted,
+    Indexed,
+}
+
+table ModelDescriptor {
+    id: string (key);                           // the model id
+    attrs: [uint32];                            // array of offsets to attributes in the attrs section
+    key_type: KeyType;                          // the key type
+    collation: KeyCollation;                    // the collation mode
+    columns: [uint32];                          // array of offsets to columns in the columns section
+}
+
+table Component {
+    dataset_url: string;                        // if not null, refers to an external reference to model column
+    model_id: string;                           // the id of the model in the schema
+    column_index: uint32;                       // the index of the column in the model
+}
+
+table ShapeDescriptor {
+    id: string (key);                           // the shape id
+    attrs: [uint32];                            // array of offsets to attributes in the attrs section
+    components: [Component];                    // the array of components which comprise the shape
+}
+
+table Schema {
+    abi: SchemaVersion;                         // target ABI the schema was generated for
+    namespaces: [NamespaceDescriptor];          // array of namespace descriptors
+    attrs: [AttrDescriptor];                    // array of attribute descriptors
+    columns: [ColumnDescriptor];                // array of column descriptors
+    models: [ModelDescriptor];                  // sorted array of model descriptors
+    shapes: [ShapeDescriptor];                  // sorted array of shape descriptors
+}
+
+root_type Schema;

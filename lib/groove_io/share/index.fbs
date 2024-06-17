@@ -1,0 +1,29 @@
+namespace gii1;
+
+file_identifier "GII1";                         // 4 byte magic for Groove IO Index major version 1
+
+enum IndexVersion : uint8 {
+    Unknown,                                    // an unknown version is not parseable
+    Version1,                                   // index minor version 1
+}
+
+table VectorDescriptor {
+    page_id: string (key);
+    frame_index: uint32;                        // the index of the frame in the frames section
+    val_offset: uint32;                         // the offset of the value column in the table
+    fid_offset: uint32;                         // the offset of the fidelity column in the table, or INVALID_OFFSET_U32 if there is no fidelity column
+}
+
+table FrameDescriptor {
+    key_offset: uint32;                         // the offset of the key column in the table
+    frame_offset: uint32;                       // byte offset of the frame in the dataset contents (not counting the file header)
+    frame_size: uint32;                         // size of the frame in bytes
+}
+
+table Index {
+    abi: IndexVersion;                          // target ABI the index was generated for
+    vectors: [VectorDescriptor];                // array of vector descriptors sorted by page id
+    frames: [FrameDescriptor];                  // array of frame descriptors
+}
+
+root_type Index;
